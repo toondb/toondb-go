@@ -1,0 +1,222 @@
+name: Release Go SDK
+
+on:
+  # Manual trigger with version input
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.3.0)'
+        required: true
+        type: string
+  # Automatic trigger on version tags
+  push:
+    tags:
+      - 'v*.*.*'
+
+env:
+  TOONDB_REPO: toondb/toondb
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            # Extract version from tag (remove 'v' prefix)
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "Using version: $VERSION"
+
+      - name: Create bin directories
+        run: |
+          mkdir -p bin/darwin-arm64
+          mkdir -p bin/linux-amd64
+          mkdir -p bin/windows-amd64
+
+      - name: Download macOS ARM64 binaries
+        run: |
+          ASSET_NAME="toondb-${{ steps.version.outputs.version }}-aarch64-apple-darwin.tar.gz"
+          DOWNLOAD_URL="https://github.com/${{ env.TOONDB_REPO }}/releases/download/${{ steps.version.outputs.tag }}/${ASSET_NAME}"
+          echo "Downloading from: $DOWNLOAD_URL"
+          
+          curl -L -f -o darwin-arm64.tar.gz "$DOWNLOAD_URL"
+          tar -xzf darwin-arm64.tar.gz
+          
+          # Move binaries to bin directory
+          mv toondb-server bin/darwin-arm64/ 2>/dev/null || true
+          mv toondb-grpc-server bin/darwin-arm64/ 2>/dev/null || true
+          mv toondb-bulk bin/darwin-arm64/ 2>/dev/null || true
+          
+          # Also check if they're in a subdirectory
+          find . -maxdepth 2 -name "toondb-server" -type f -exec mv {} bin/darwin-arm64/ \; 2>/dev/null || true
+          find . -maxdepth 2 -name "toondb-grpc-server" -type f -exec mv {} bin/darwin-arm64/ \; 2>/dev/null || true
+          find . -maxdepth 2 -name "toondb-bulk" -type f -exec mv {} bin/darwin-arm64/ \; 2>/dev/null || true
+          
+          rm -f darwin-arm64.tar.gz
+          ls -la bin/darwin-arm64/
+
+      - name: Download Linux x86_64 binaries
+        run: |
+          ASSET_NAME="toondb-${{ steps.version.outputs.version }}-x86_64-unknown-linux-gnu.tar.gz"
+          DOWNLOAD_URL="https://github.com/${{ env.TOONDB_REPO }}/releases/download/${{ steps.version.outputs.tag }}/${ASSET_NAME}"
+          echo "Downloading from: $DOWNLOAD_URL"
+          
+          curl -L -f -o linux-amd64.tar.gz "$DOWNLOAD_URL"
+          tar -xzf linux-amd64.tar.gz
+          
+          # Move binaries to bin directory
+          mv toondb-server bin/linux-amd64/ 2>/dev/null || true
+          mv toondb-grpc-server bin/linux-amd64/ 2>/dev/null || true
+          mv toondb-bulk bin/linux-amd64/ 2>/dev/null || true
+          
+          # Also check if they're in a subdirectory
+          find . -maxdepth 2 -name "toondb-server" -type f -exec mv {} bin/linux-amd64/ \; 2>/dev/null || true
+          find . -maxdepth 2 -name "toondb-grpc-server" -type f -exec mv {} bin/linux-amd64/ \; 2>/dev/null || true
+          find . -maxdepth 2 -name "toondb-bulk" -type f -exec mv {} bin/linux-amd64/ \; 2>/dev/null || true
+          
+          rm -f linux-amd64.tar.gz
+          ls -la bin/linux-amd64/
+
+      - name: Download Windows x86_64 binaries
+        run: |
+          ASSET_NAME="toondb-${{ steps.version.outputs.version }}-x86_64-pc-windows-msvc.zip"
+          DOWNLOAD_URL="https://github.com/${{ env.TOONDB_REPO }}/releases/download/${{ steps.version.outputs.tag }}/${ASSET_NAME}"
+          echo "Downloading from: $DOWNLOAD_URL"
+          
+          curl -L -f -o windows-amd64.zip "$DOWNLOAD_URL"
+          unzip -o windows-amd64.zip
+          
+          # Move binaries to bin directory
+          mv toondb-server.exe bin/windows-amd64/ 2>/dev/null || true
+          mv toondb-grpc-server.exe bin/windows-amd64/ 2>/dev/null || true
+          mv toondb-bulk.exe bin/windows-amd64/ 2>/dev/null || true
+          
+          # Also check if they're in a subdirectory
+          find . -maxdepth 2 -name "toondb-server.exe" -type f -exec mv {} bin/windows-amd64/ \; 2>/dev/null || true
+          find . -maxdepth 2 -name "toondb-grpc-server.exe" -type f -exec mv {} bin/windows-amd64/ \; 2>/dev/null || true
+          find . -maxdepth 2 -name "toondb-bulk.exe" -type f -exec mv {} bin/windows-amd64/ \; 2>/dev/null || true
+          
+          rm -f windows-amd64.zip
+          ls -la bin/windows-amd64/
+
+      - name: Update version in database.go
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if grep -q 'const Version' database.go; then
+            sed -i "s/const Version = \".*\"/const Version = \"$VERSION\"/" database.go
+          fi
+          cat database.go | grep -A1 "Version" || true
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Verify Go module
+        run: |
+          go mod tidy
+          go build ./...
+
+      - name: Create release archive
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          # Create archive with Go source and binaries
+          tar -czvf toondb-go-${VERSION}.tar.gz \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='*.tar.gz' \
+            .
+          
+          # List contents
+          echo "Archive contents:"
+          tar -tzvf toondb-go-${VERSION}.tar.gz | head -50
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          cat << 'EOF' > release_notes.md
+          ## ToonDB Go SDK v${{ steps.version.outputs.version }}
+          
+          ### Installation
+          
+          ```bash
+          go get github.com/toondb/toondb-go@v${{ steps.version.outputs.version }}
+          ```
+          
+          ### Bundled Binaries
+          
+          This release includes pre-built ToonDB server binaries for:
+          - **macOS ARM64** (Apple Silicon) - `bin/darwin-arm64/`
+          - **Linux x86_64** - `bin/linux-amd64/`
+          - **Windows x64** - `bin/windows-amd64/`
+          
+          The binaries are automatically extracted and used when you create a new ToonDB instance.
+          
+          ### Binary Contents
+          
+          Each platform includes:
+          - `toondb-server` - Main database server
+          - `toondb-grpc-server` - gRPC server for remote connections
+          - `toondb-bulk` - Bulk import/export utility
+          
+          ### Changes
+          
+          See the [main ToonDB changelog](https://github.com/toondb/toondb/blob/main/CHANGELOG.md) for details.
+          EOF
+
+      - name: Commit binaries to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Add bin directory
+          git add bin/
+          git add database.go
+          
+          # Check if there are changes to commit
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: bundle binaries for v${{ steps.version.outputs.version }}"
+            git push origin HEAD:main
+          fi
+
+      - name: Create or update tag
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          
+          # Delete existing tag if it exists (for re-releases)
+          git tag -d "$TAG" 2>/dev/null || true
+          git push origin ":refs/tags/$TAG" 2>/dev/null || true
+          
+          # Create new tag
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ToonDB Go SDK ${{ steps.version.outputs.tag }}
+          body_path: release_notes.md
+          files: |
+            toondb-go-${{ steps.version.outputs.version }}.tar.gz
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
