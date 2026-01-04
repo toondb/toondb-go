@@ -15,7 +15,7 @@ import (
 )
 
 // Version is the current SDK version.
-const Version = "0.3.0"
+const Version = "0.3.1"
 
 // Config holds database configuration options.
 type Config struct {
@@ -157,8 +157,13 @@ func OpenWithConfig(config *Config) (*Database, error) {
 			// Clean up server if we started it
 			StopEmbeddedServer(config.Path)
 		}
+		// Track connection error
+		trackError("connection_error", "OpenWithConfig")
 		return nil, err
 	}
+
+	// Track successful database opening
+	trackDatabaseOpened()
 
 	return &Database{
 		client:              client,

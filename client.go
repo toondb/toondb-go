@@ -323,6 +323,19 @@ func (c *IPCClient) readMessage() (OpCode, []byte, error) {
 // parseErrorPayload parses an error payload (the payload part of an ERROR response)
 func (c *IPCClient) parseErrorPayload(payload []byte) error {
 	msg := string(payload)
+
+	// Track specific error types
+	if len(msg) > 0 {
+		switch {
+		case contains(msg, "permission") || contains(msg, "access denied"):
+			trackError("permission_error", "parseErrorPayload")
+		case contains(msg, "timeout") || contains(msg, "deadline"):
+			trackError("timeout_error", "parseErrorPayload")
+		default:
+			trackError("query_error", "parseErrorPayload")
+		}
+	}
+
 	return &ToonDBError{Op: "remote", Message: msg}
 }
 
@@ -457,6 +470,12 @@ func (c *IPCClient) readSimpleResponse() error {
 func (c *IPCClient) readQueryResponse() ([]KeyValue, error) {
 	opcode, payload, err := c.readMessage()
 	if err != nil {
+		// Track connection/timeout errors
+		if isTimeoutError(err) {
+			trackError("timeout_error", "readQueryResponse")
+		} else {
+			trackError("connection_error", "readQueryResponse")
+		}
 		return nil, err
 	}
 
@@ -575,4 +594,44 @@ type StorageStats struct {
 	MemtableSizeBytes  uint64
 	WALSizeBytes       uint64
 	ActiveTransactions int
+}
+
+// Helper functions for analytics error tracking
+
+// contains checks if a string contains a substring (case-insensitive helper)
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr ||
+		(len(s) > len(substr) && someContains(s, substr)))
+}
+
+func someContains(s, substr string) bool {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		match := true
+		for j := 0; j < len(substr); j++ {
+			if toLower(s[i+j]) != toLower(substr[j]) {
+				match = false
+				break
+			}
+		}
+		if match {
+			return true
+		}
+	}
+	return false
+}
+
+func toLower(c byte) byte {
+	if c >= 'A' && c <= 'Z' {
+		return c + ('a' - 'A')
+	}
+	return c
+}
+
+// isTimeoutError checks if an error is a timeout error
+func isTimeoutError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return contains(msg, "timeout") || contains(msg, "deadline")
 }
