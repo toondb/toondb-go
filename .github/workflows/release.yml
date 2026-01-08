@@ -198,6 +198,10 @@ jobs:
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           
+          # Configure git identity
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
           # Delete existing tag if it exists (for re-releases)
           git tag -d "$TAG" 2>/dev/null || true
           git push origin ":refs/tags/$TAG" 2>/dev/null || true
