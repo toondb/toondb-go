@@ -194,7 +194,7 @@ jobs:
           See the [main ToonDB changelog](https://github.com/toondb/toondb/blob/main/CHANGELOG.md) for details.
           EOF
 
-      - name: Commit binaries to repository
+      - name: Commit binaries to release branch (optional)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -207,8 +207,17 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
+            # Commit to current branch (release/X.Y.Z) instead of main
             git commit -m "chore: bundle binaries for v${{ steps.version.outputs.version }}"
-            git push origin HEAD:main
+            
+            # Only push if we're on a branch (not detached HEAD from tag push)
+            BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+            if [ -n "$BRANCH" ]; then
+              echo "Pushing binaries to branch: $BRANCH"
+              git push origin HEAD
+            else
+              echo "Skipping push - detached HEAD state"
+            fi
           fi
 
       - name: Create or update tag
