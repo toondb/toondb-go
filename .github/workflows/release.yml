@@ -64,6 +64,8 @@ jobs:
           find . -maxdepth 2 -name "toondb-server" -type f -exec mv {} bin/darwin-arm64/ \; 2>/dev/null || true
           find . -maxdepth 2 -name "toondb-grpc-server" -type f -exec mv {} bin/darwin-arm64/ \; 2>/dev/null || true
           find . -maxdepth 2 -name "toondb-bulk" -type f -exec mv {} bin/darwin-arm64/ \; 2>/dev/null || true
+          # Libraries (for Embedded Mode)
+          find . -maxdepth 2 -name "libtoondb_storage.dylib" -type f -exec mv {} bin/darwin-arm64/ \; 2>/dev/null || true
           
           rm -f darwin-arm64.tar.gz
           ls -la bin/darwin-arm64/
@@ -76,6 +78,15 @@ jobs:
           
           curl -L -f -o linux-amd64.tar.gz "$DOWNLOAD_URL"
           tar -xzf linux-amd64.tar.gz
+          
+          # Setup native libs for CGO (required for go build)
+          mkdir -p ../toondb/target/release
+          find . -name "libtoondb_storage.so" -type f -exec cp {} ../toondb/target/release/ \;
+          # Also package in release
+          find . -name "libtoondb_storage.so" -type f -exec cp {} bin/linux-amd64/ \;
+          
+          # Also ensure include dir exists to prevent CFLAGS warning/error
+          mkdir -p include
           
           # Move binaries to bin directory
           mv toondb-server bin/linux-amd64/ 2>/dev/null || true
@@ -108,6 +119,8 @@ jobs:
           find . -maxdepth 2 -name "toondb-server.exe" -type f -exec mv {} bin/windows-amd64/ \; 2>/dev/null || true
           find . -maxdepth 2 -name "toondb-grpc-server.exe" -type f -exec mv {} bin/windows-amd64/ \; 2>/dev/null || true
           find . -maxdepth 2 -name "toondb-bulk.exe" -type f -exec mv {} bin/windows-amd64/ \; 2>/dev/null || true
+          # Libraries (for Embedded Mode)
+          find . -maxdepth 2 -name "toondb_storage.dll" -type f -exec mv {} bin/windows-amd64/ \; 2>/dev/null || true
           
           rm -f windows-amd64.zip
           ls -la bin/windows-amd64/
@@ -148,9 +161,6 @@ jobs:
             --exclude='aarch64-apple-darwin' \
             --exclude='x86_64-unknown-linux-gnu' \
             --exclude='x86_64-pc-windows-msvc' \
-            --exclude='*.dylib' \
-            --exclude='*.so' \
-            --exclude='*.dll' \
             .
           
           # Move to current directory
