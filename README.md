@@ -1,4 +1,4 @@
-# ToonDB Go SDK v0.3.6
+# SochDB Go SDK v0.4.0
 
 **Dual-mode architecture: Embedded (FFI) + Server (gRPC/IPC)**  
 Choose the deployment mode that fits your needs.
@@ -13,11 +13,11 @@ Choose the deployment mode that fits your needs.
 │  1. EMBEDDED MODE (FFI)          2. SERVER MODE (gRPC)      │
 │  ┌─────────────────────┐         ┌─────────────────────┐   │
 │  │   Go App        │         │   Go App        │   │
-│  │   ├─ Database.open()│         │   ├─ ToonDBClient() │   │
+│  │   ├─ Database.open()│         │   ├─ SochDBClient() │   │
 │  │   └─ Direct FFI     │         │   └─ gRPC calls     │   │
 │  │         │           │         │         │           │   │
 │  │         ▼           │         │         ▼           │   │
-│  │   libtoondb_storage │         │   toondb-grpc       │   │
+│  │   libsochdb_storage │         │   sochdb-grpc       │   │
 │  │   (Rust native)     │         │   (Rust server)     │   │
 │  └─────────────────────┘         └─────────────────────┘   │
 │                                                               │
@@ -48,18 +48,18 @@ Choose the deployment mode that fits your needs.
 ## Installation
 
 ```bash
-go get github.com/toondb/toondb-go
+go get github.com/sochdb/sochdb-go
 ```
 
 Or from source:
 ```bash
-cd toondb-go-sdk
+cd sochdb-go-sdk
 go build
 ```
 
-# ToonDB Go SDK Documentation
+# SochDB Go SDK Documentation
 
-**Version 0.3.6** | LLM-Optimized Embedded Database with Native Vector Search
+**Version 0.4.0** | LLM-Optimized Embedded Database with Native Vector Search
 
 ---
 
@@ -107,7 +107,7 @@ go build
 ## 1. Quick Start
 
 ```go
-from toondb import Database
+from sochdb import Database
 
 # Open (or create) a database
 db = Database.open("./my_database")
@@ -140,7 +140,7 @@ db.close()
 ## 2. Installation
 
 ```bash
-go get github.com/toondb/toondb-go
+go get github.com/sochdb/sochdb-go
 ```
 
 **Platform Support:**
@@ -153,27 +153,27 @@ go get github.com/toondb/toondb-go
 **Optional Dependencies:**
 ```bash
 # For async support
-go get github.com/toondb/toondb-go[async]
+go get github.com/sochdb/sochdb-go[async]
 
 # For server mode
-go get github.com/toondb/toondb-go[grpc]
+go get github.com/sochdb/sochdb-go[grpc]
 
 # Everything
-go get github.com/toondb/toondb-go[all]
+go get github.com/sochdb/sochdb-go[all]
 ```
 
 ---
 
 ## 3. Architecture Overview
 
-ToonDB supports two deployment modes:
+SochDB supports two deployment modes:
 
 ### Embedded Mode (Default)
 
 Direct Rust bindings via FFI. No server required.
 
 ```go
-from toondb import Database
+from sochdb import Database
 
 with Database.open("./mydb") as db:
     db.put(b"key", b"value")
@@ -184,12 +184,12 @@ with Database.open("./mydb") as db:
 
 ### Server Mode (gRPC)
 
-Thin client connecting to `toondb-grpc` server.
+Thin client connecting to `sochdb-grpc` server.
 
 ```go
-from toondb import ToonDBClient
+from sochdb import SochDBClient
 
-client = ToonDBClient("localhost:50051")
+client = SochDBClient("localhost:50051")
 client.put(b"key", b"value", namespace="default")
 value = client.get(b"key", namespace="default")
 ```
@@ -217,11 +217,11 @@ value = client.get(b"key", namespace="default")
 │  EMBEDDED MODE (FFI)             SERVER MODE (gRPC)         │
 │  ┌─────────────────────┐         ┌─────────────────────┐   │
 │  │   Go App        │         │   Go App        │   │
-│  │   ├─ Database.open()│         │   ├─ ToonDBClient() │   │
+│  │   ├─ Database.open()│         │   ├─ SochDBClient() │   │
 │  │   └─ Direct FFI     │         │   └─ gRPC calls     │   │
 │  │         │           │         │         │           │   │
 │  │         ▼           │         │         ▼           │   │
-│  │   libtoondb_storage │         │   toondb-grpc       │   │
+│  │   libsochdb_storage │         │   sochdb-grpc       │   │
 │  │   (Rust native)     │         │   (Rust server)     │   │
 │  └─────────────────────┘         └─────────────────────┘   │
 │                                                              │
@@ -240,7 +240,7 @@ All keys and values are **bytes**.
 ### Basic Operations
 
 ```go
-from toondb import Database
+from sochdb import Database
 
 db = Database.open("./my_db")
 
@@ -320,7 +320,7 @@ with Database.open("./my_db") as db:
 
 ## 5. Transactions (ACID with SSI)
 
-ToonDB provides full ACID transactions with **Serializable Snapshot Isolation (SSI)**.
+SochDB provides full ACID transactions with **Serializable Snapshot Isolation (SSI)**.
 
 ### Context Manager Pattern (Recommended)
 
@@ -379,7 +379,7 @@ print(f"Isolation: {txn.isolation}")    # "serializable"
 ### SSI Conflict Handling
 
 ```go
-from toondb import TransactionConflictError
+from sochdb import TransactionConflictError
 
 MAX_RETRIES = 3
 
@@ -426,7 +426,7 @@ with db.transaction() as txn:
 ### Isolation Levels
 
 ```go
-from toondb import IsolationLevel
+from sochdb import IsolationLevel
 
 # Default: Serializable (strongest)
 with db.transaction(isolation=IsolationLevel.SERIALIZABLE) as txn:
@@ -462,7 +462,7 @@ for key, value in results:
 ### Filtered Query
 
 ```go
-from toondb import CompareOp
+from sochdb import CompareOp
 
 # Query with filters
 results = db.query("orders/")
@@ -645,7 +645,7 @@ db.execute_sql("""
 ### Query Results
 
 ```go
-from toondb import SQLQueryResult
+from sochdb import SQLQueryResult
 
 result = db.execute_sql("SELECT id, name FROM users")
 
@@ -693,7 +693,7 @@ stmt.close()
 
 ### Dialect Support
 
-ToonDB auto-detects SQL dialects:
+SochDB auto-detects SQL dialects:
 
 ```go
 # PostgreSQL style
@@ -766,7 +766,7 @@ Organize data into logical namespaces for tenant isolation.
 ### Creating Namespaces
 
 ```go
-from toondb import NamespaceConfig
+from sochdb import NamespaceConfig
 
 # Create namespace with metadata
 ns = db.create_namespace(
@@ -858,7 +858,7 @@ Collections store documents with embeddings for semantic search using HNSW.
 ### Collection Configuration
 
 ```go
-from toondb import (
+from sochdb import (
     CollectionConfig,
     DistanceMetric,
     QuantizationType,
@@ -928,7 +928,7 @@ collection.insert_multi(
 ### Vector Search
 
 ```go
-from toondb import SearchRequest
+from sochdb import SearchRequest
 
 # Using SearchRequest (full control)
 request = SearchRequest(
@@ -1397,7 +1397,7 @@ Assemble LLM context with token budgeting and priority-based truncation.
 ### Basic Context Query
 
 ```go
-from toondb import ContextQueryBuilder, ContextFormat, TruncationStrategy
+from sochdb import ContextQueryBuilder, ContextFormat, TruncationStrategy
 
 # Build context for LLM
 context = ContextQueryBuilder() \
@@ -1450,7 +1450,7 @@ print(f"Context:\n{context.text}")
 ### Variables and Bindings
 
 ```go
-from toondb import ContextValue
+from sochdb import ContextValue
 
 context = ContextQueryBuilder() \
     .for_session("session_123") \
@@ -1496,7 +1496,7 @@ Agent session abc123:
 ### Creating Sessions
 
 ```go
-from toondb import SessionManager, AgentContext
+from sochdb import SessionManager, AgentContext
 from datetime import timedelta
 
 # Create session manager with idle timeout
@@ -1524,7 +1524,7 @@ count = session_mgr.session_count()
 ### Agent Context
 
 ```go
-from toondb import AgentContext, ContextValue
+from sochdb import AgentContext, ContextValue
 
 # Create agent context
 ctx = AgentContext("session_abc123")
@@ -1565,7 +1565,7 @@ text = ctx.substitute_vars("Using $model with budget $budget")
 ### Context Value Types
 
 ```go
-from toondb import ContextValue
+from sochdb import ContextValue
 
 # String
 ContextValue.String("hello")
@@ -1595,7 +1595,7 @@ ContextValue.Null()
 ### Permissions
 
 ```go
-from toondb import (
+from sochdb import (
     AgentPermissions,
     FsPermissions,
     DbPermissions,
@@ -1642,7 +1642,7 @@ except ContextError as e:
 ### Budget Tracking
 
 ```go
-from toondb import OperationBudget
+from sochdb import OperationBudget
 
 # Configure budget limits
 ctx.budget = OperationBudget(
@@ -1724,7 +1724,7 @@ for entry in audit_log:
 ### Audit Operations
 
 ```go
-from toondb import AuditOperation
+from sochdb import AuditOperation
 
 # Filesystem operations
 AuditOperation.FS_READ
@@ -1751,7 +1751,7 @@ AuditOperation.TX_ROLLBACK
 ### Tool Registry
 
 ```go
-from toondb import ToolDefinition, ToolCallRecord
+from sochdb import ToolDefinition, ToolCallRecord
 from datetime import datetime
 
 # Register tools available to the agent
@@ -1803,7 +1803,7 @@ if ctx.is_expired(idle_timeout=timedelta(hours=1)):
 ### Complete Session Example
 
 ```go
-from toondb import (
+from sochdb import (
     SessionManager, AgentContext, ContextValue,
     AgentPermissions, FsPermissions, DbPermissions,
     OperationBudget, ToolDefinition, AuditOperation
@@ -1884,7 +1884,7 @@ session_mgr.cleanup_expired()
 ### Session Errors
 
 ```go
-from toondb import ContextError
+from sochdb import ContextError
 
 try:
     ctx.check_fs_permission("/forbidden", AuditOperation.FS_READ)
@@ -1920,7 +1920,7 @@ Ensure consistency across KV storage, vectors, and graphs with atomic operations
 ### Atomic Memory Writer
 
 ```go
-from toondb import AtomicMemoryWriter, MemoryOp
+from sochdb import AtomicMemoryWriter, MemoryOp
 
 writer = AtomicMemoryWriter(db)
 
@@ -1979,12 +1979,12 @@ print(f"Status: {result.status}")  # "committed"
 
 ## 18. Recovery & WAL Management
 
-ToonDB uses Write-Ahead Logging (WAL) for durability with automatic recovery.
+SochDB uses Write-Ahead Logging (WAL) for durability with automatic recovery.
 
 ### Recovery Manager
 
 ```go
-from toondb import RecoveryManager
+from sochdb import RecoveryManager
 
 recovery = db.recovery()
 
@@ -2048,7 +2048,7 @@ print(f"Bytes freed: {result.bytes_freed}")
 ### Open with Auto-Recovery
 
 ```go
-from toondb import open_with_recovery
+from sochdb import open_with_recovery
 
 # Automatically recovers if needed
 db = open_with_recovery("./my_database")
@@ -2063,7 +2063,7 @@ db = open_with_recovery("./my_database")
 Save and restore application state for workflow interruption/resumption.
 
 ```go
-from toondb import CheckpointService
+from sochdb import CheckpointService
 
 checkpoint_svc = db.checkpoint_service()
 
@@ -2135,7 +2135,7 @@ db.put(b"key1", b"new_value")  # Snapshot doesn't see this
 ### Compression Settings
 
 ```go
-from toondb import CompressionType
+from sochdb import CompressionType
 
 db = Database.open("./my_db", config={
     # Compression for SST files
@@ -2243,7 +2243,7 @@ Track operations for debugging and performance analysis.
 ### Starting Traces
 
 ```go
-from toondb import TraceStore
+from sochdb import TraceStore
 
 traces = TraceStore(db)
 
@@ -2258,7 +2258,7 @@ trace_id = run.trace_id
 ### Creating Spans
 
 ```go
-from toondb import SpanKind, SpanStatusCode
+from sochdb import SpanKind, SpanStatusCode
 
 # Start root span
 root_span = traces.start_span(
@@ -2278,7 +2278,7 @@ db_span = traces.start_span(
 
 # Add attributes
 traces.set_span_attributes(trace_id, db_span.span_id, {
-    "db.system": "toondb",
+    "db.system": "sochdb",
     "db.operation": "SELECT",
     "db.table": "users"
 })
@@ -2321,7 +2321,7 @@ Track long-running workflows with events and state.
 ### Creating Workflow Runs
 
 ```go
-from toondb import WorkflowService, RunStatus
+from sochdb import WorkflowService, RunStatus
 
 workflow_svc = db.workflow_service()
 
@@ -2340,7 +2340,7 @@ print(f"Created: {run.created_at}")
 ### Appending Events
 
 ```go
-from toondb import WorkflowEvent, EventType
+from sochdb import WorkflowEvent, EventType
 
 # Append events as workflow progresses
 workflow_svc.append_event(WorkflowEvent(
@@ -2391,19 +2391,19 @@ Full-featured client for distributed deployments.
 ### Connection
 
 ```go
-from toondb import ToonDBClient
+from sochdb import SochDBClient
 
 # Basic connection
-client = ToonDBClient("localhost:50051")
+client = SochDBClient("localhost:50051")
 
 # With TLS
-client = ToonDBClient("localhost:50051", secure=True, ca_cert="ca.pem")
+client = SochDBClient("localhost:50051", secure=True, ca_cert="ca.pem")
 
 # With authentication
-client = ToonDBClient("localhost:50051", api_key="your_api_key")
+client = SochDBClient("localhost:50051", api_key="your_api_key")
 
 # Context manager
-with ToonDBClient("localhost:50051") as client:
+with SochDBClient("localhost:50051") as client:
     client.put(b"key", b"value")
 ```
 
@@ -2517,10 +2517,10 @@ print(f"Tokens used: {context.token_count}")
 Local server communication via Unix sockets (lower latency than gRPC).
 
 ```go
-from toondb import IpcClient
+from sochdb import IpcClient
 
 # Connect
-client = IpcClient.connect("/tmp/toondb.sock", timeout=30.0)
+client = IpcClient.connect("/tmp/sochdb.sock", timeout=30.0)
 
 # Basic operations
 client.put(b"key", b"value")
@@ -2558,7 +2558,7 @@ client.close()
 Direct HNSW index operations without collections.
 
 ```go
-from toondb import VectorIndex, VectorIndexConfig, DistanceMetric
+from sochdb import VectorIndex, VectorIndexConfig, DistanceMetric
 import numpy as np
 
 # Create index
@@ -2606,7 +2606,7 @@ index = VectorIndex.load("./index.bin")
 Standalone vector operations for preprocessing and analysis.
 
 ```go
-from toondb import vector
+from sochdb import vector
 
 # Distance calculations
 a = [1.0, 0.0, 0.0]
@@ -2644,7 +2644,7 @@ similarity = vector.cosine_similarity(a, b)
 ### Wire Formats
 
 ```go
-from toondb import WireFormat
+from sochdb import WireFormat
 
 # Available formats
 WireFormat.TOON      # Token-efficient (40-66% fewer tokens)
@@ -2677,14 +2677,14 @@ users:
 ### Context Formats
 
 ```go
-from toondb import ContextFormat
+from sochdb import ContextFormat
 
 ContextFormat.TOON      # Token-efficient
 ContextFormat.JSON      # Structured data
 ContextFormat.MARKDOWN  # Human-readable
 
 # Format capabilities
-from toondb import FormatCapabilities
+from sochdb import FormatCapabilities
 
 # Convert between formats
 ctx_fmt = FormatCapabilities.wire_to_context(WireFormat.TOON)
@@ -2702,7 +2702,7 @@ if FormatCapabilities.supports_round_trip(WireFormat.TOON):
 Register and evaluate access control policies.
 
 ```go
-from toondb import PolicyService
+from sochdb import PolicyService
 
 policy_svc = db.policy_service()
 
@@ -2750,17 +2750,17 @@ policy_svc.delete("old_policy")
 
 ## 30. MCP (Model Context Protocol)
 
-Integrate ToonDB as an MCP tool provider.
+Integrate SochDB as an MCP tool provider.
 
 ### Built-in MCP Tools
 
 | Tool | Description |
 |------|-------------|
-| `toondb_query` | Execute ToonQL/SQL queries |
-| `toondb_context_query` | Fetch AI-optimized context |
-| `toondb_put` | Store key-value data |
-| `toondb_get` | Retrieve data by key |
-| `toondb_search` | Vector similarity search |
+| `sochdb_query` | Execute ToonQL/SQL queries |
+| `sochdb_context_query` | Fetch AI-optimized context |
+| `sochdb_put` | Store key-value data |
+| `sochdb_get` | Retrieve data by key |
+| `sochdb_search` | Vector similarity search |
 
 ### Using MCP Tools (Server Mode)
 
@@ -2771,12 +2771,12 @@ for tool in tools:
     print(f"{tool.name}: {tool.description}")
 
 # Get tool schema
-schema = client.get_mcp_tool_schema("toondb_search")
+schema = client.get_mcp_tool_schema("sochdb_search")
 print(schema)
 
 # Execute tool
 result = client.execute_mcp_tool(
-    name="toondb_query",
+    name="sochdb_query",
     arguments={"query": "SELECT * FROM users", "format": "toon"}
 )
 print(result)
@@ -2807,7 +2807,7 @@ client.register_mcp_tool(
 ### Database Configuration
 
 ```go
-from toondb import Database, CompressionType, SyncMode
+from sochdb import Database, CompressionType, SyncMode
 
 db = Database.open("./my_db", config={
     # Durability
@@ -2857,9 +2857,9 @@ db = Database.open("./my_db", config={
 
 | Variable | Description |
 |----------|-------------|
-| `TOONDB_LIB_PATH` | Custom path to native library |
-| `TOONDB_DISABLE_ANALYTICS` | Disable anonymous usage tracking |
-| `TOONDB_LOG_LEVEL` | Log level (DEBUG, INFO, WARN, ERROR) |
+| `SOCHDB_LIB_PATH` | Custom path to native library |
+| `SOCHDB_DISABLE_ANALYTICS` | Disable anonymous usage tracking |
+| `SOCHDB_LOG_LEVEL` | Log level (DEBUG, INFO, WARN, ERROR) |
 
 ---
 
@@ -2868,9 +2868,9 @@ db = Database.open("./my_db", config={
 ### Error Types
 
 ```go
-from toondb import (
+from sochdb import (
     # Base
-    ToonDBError,
+    SochDBError,
     
     # Connection
     ConnectionError,
@@ -2911,8 +2911,8 @@ from toondb import (
 ### Error Handling Pattern
 
 ```go
-from toondb import (
-    ToonDBError,
+from sochdb import (
+    SochDBError,
     TransactionConflictError,
     DimensionMismatchError,
     CollectionNotFoundError,
@@ -2934,8 +2934,8 @@ except CollectionNotFoundError as e:
     # Collection doesn't exist
     print(f"Collection not found: {e.collection}")
     
-except ToonDBError as e:
-    # All other ToonDB errors
+except SochDBError as e:
+    # All other SochDB errors
     print(f"Error: {e}")
     print(f"Code: {e.code}")
     print(f"Remediation: {e.remediation}")
@@ -2946,7 +2946,7 @@ except ToonDBError as e:
 ```go
 try:
     # ...
-except ToonDBError as e:
+except SochDBError as e:
     print(f"Message: {e.message}")
     print(f"Code: {e.code}")           # ErrorCode enum
     print(f"Details: {e.details}")      # Additional context
@@ -2961,7 +2961,7 @@ except ToonDBError as e:
 Optional async/await support for non-blocking operations.
 
 ```go
-from toondb import AsyncDatabase
+from sochdb import AsyncDatabase
 
 async def main():
     # Open async database
@@ -2989,7 +2989,7 @@ import asyncio
 asyncio.run(main())
 ```
 
-**Note:** Requires `go get github.com/toondb/toondb-go[async]`
+**Note:** Requires `go get github.com/sochdb/sochdb-go[async]`
 
 ---
 
@@ -3014,7 +3014,7 @@ go build_native.go --clean
 ### Library Discovery
 
 The SDK looks for native libraries in this order:
-1. `TOONDB_LIB_PATH` environment variable
+1. `SOCHDB_LIB_PATH` environment variable
 2. Bundled in wheel: `lib/{target}/`
 3. Package directory
 4. Development builds: `target/release/`, `target/debug/`
@@ -3030,7 +3030,7 @@ pytest
 pytest tests/test_vector_search.go
 
 # With coverage
-pytest --cov=toondb
+pytest --cov=sochdb
 
 # Performance tests
 pytest tests/perf/ --benchmark
@@ -3039,12 +3039,12 @@ pytest tests/perf/ --benchmark
 ### Package Structure
 
 ```
-toondb/
+sochdb/
 ├── __init__.go          # Public API exports
 ├── database.go          # Database, Transaction
 ├── namespace.go         # Namespace, Collection
 ├── vector.go            # VectorIndex, utilities
-├── grpc_client.go       # ToonDBClient (server mode)
+├── grpc_client.go       # SochDBClient (server mode)
 ├── ipc_client.go        # IpcClient (Unix sockets)
 ├── context.go           # ContextQueryBuilder
 ├── atomic.go            # AtomicMemoryWriter
@@ -3066,7 +3066,7 @@ toondb/
 ### RAG Pipeline Example
 
 ```go
-from toondb import Database, CollectionConfig, DistanceMetric, SearchRequest
+from sochdb import Database, CollectionConfig, DistanceMetric, SearchRequest
 
 # Setup
 db = Database.open("./rag_db")
@@ -3109,7 +3109,7 @@ def rag_query(query: str, embed_fn, llm_fn):
     context_docs = retrieve_context(query, embed_fn)
     
     # 2. Build context
-    from toondb import ContextQueryBuilder, ContextFormat
+    from sochdb import ContextQueryBuilder, ContextFormat
     
     context = ContextQueryBuilder() \
         .for_session("rag_session") \
@@ -3130,7 +3130,7 @@ db.close()
 ### Knowledge Graph Example
 
 ```go
-from toondb import Database
+from sochdb import Database
 import time
 
 db = Database.open("./knowledge_graph")
@@ -3163,7 +3163,7 @@ db.close()
 ### Multi-Tenant SaaS Example
 
 ```go
-from toondb import Database
+from sochdb import Database
 
 db = Database.open("./saas_db")
 
@@ -3232,7 +3232,7 @@ rows = result.rows
 # conn = sqlite3.connect("app.db")
 # cursor = conn.execute("SELECT * FROM users")
 
-# ToonDB (same SQL, embedded)
+# SochDB (same SQL, embedded)
 db = Database.open("./app_db")
 result = db.execute_sql("SELECT * FROM users")
 ```
@@ -3245,7 +3245,7 @@ result = db.execute_sql("SELECT * FROM users")
 # r.set("key", "value")
 # r.get("key")
 
-# ToonDB
+# SochDB
 db = Database.open("./cache_db")
 db.put(b"key", b"value")
 db.get(b"key")
@@ -3261,7 +3261,7 @@ db.put(b"session:123", b"data", ttl_seconds=3600)
 # index.upsert(vectors=[(id, embedding, metadata)])
 # results = index.query(vector=query, top_k=10)
 
-# ToonDB
+# SochDB
 collection = db.namespace("default").collection("vectors")
 collection.insert(id=id, vector=embedding, metadata=metadata)
 results = collection.vector_search(vector=query, k=10)
@@ -3294,10 +3294,10 @@ A:
 - **Server (gRPC)**: For production, multi-language, distributed systems
 
 **Q: Can I switch between modes?**  
-A: Yes! Both modes have the same API. Change `Database.open()` to `ToonDBClient()` and vice versa.
+A: Yes! Both modes have the same API. Change `Database.open()` to `SochDBClient()` and vice versa.
 
 **Q: Do temporal graphs work in embedded mode?**  
-A: Yes! As of v0.3.6, temporal graphs work in both embedded and server modes with identical APIs.
+A: Yes! As of v0.4.0, temporal graphs work in both embedded and server modes with identical APIs.
 
 **Q: Is embedded mode slower than server mode?**  
 A: Embedded mode is faster for single-process use (no network overhead). Server mode is better for distributed deployments.
@@ -3327,8 +3327,8 @@ See the [examples/](examples/) directory for complete working examples:
 
 ## Getting Help
 
-- **Documentation**: https://toondb.dev
-- **GitHub Issues**: https://github.com/toondb/toondb/issues
+- **Documentation**: https://sochdb.dev
+- **GitHub Issues**: https://github.com/sochdb/sochdb/issues
 - **Examples**: See [examples/](examples/) directory
 
 ---

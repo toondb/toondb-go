@@ -1,8 +1,8 @@
-// Package toondb provides a thin gRPC client wrapper for the ToonDB server.
+// Package sochdb provides a thin gRPC client wrapper for the SochDB server.
 // All business logic runs on the server (Thick Server / Thin Client architecture).
 //
 // The client is approximately ~300 lines of code, delegating all operations to the server.
-package toondb
+package sochdb
 
 import (
 	"context"
@@ -13,8 +13,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-// GrpcClient provides thin gRPC client for ToonDB.
-// All operations are delegated to the ToonDB gRPC server.
+// GrpcClient provides thin gRPC client for SochDB.
+// All operations are delegated to the SochDB gRPC server.
 type GrpcClient struct {
 	conn    *grpc.ClientConn
 	address string
@@ -57,7 +57,7 @@ type GrpcGraphEdge struct {
 	Properties map[string]string
 }
 
-// NewGrpcClient creates a new gRPC client connected to ToonDB server.
+// NewGrpcClient creates a new gRPC client connected to SochDB server.
 func NewGrpcClient(opts GrpcClientOptions) (*GrpcClient, error) {
 	if opts.Address == "" {
 		opts.Address = "localhost:50051"
@@ -89,7 +89,7 @@ func NewGrpcClient(opts GrpcClientOptions) (*GrpcClient, error) {
 	}, nil
 }
 
-// GrpcConnect is a convenience function to connect to a ToonDB gRPC server.
+// GrpcConnect is a convenience function to connect to a SochDB gRPC server.
 func GrpcConnect(address string) (*GrpcClient, error) {
 	return NewGrpcClient(GrpcClientOptions{Address: address})
 }

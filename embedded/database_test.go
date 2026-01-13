@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/toondb/toondb-go/embedded"
+	"github.com/sochdb/sochdb-go/embedded"
 )
 
 func TestEmbeddedDatabase(t *testing.T) {

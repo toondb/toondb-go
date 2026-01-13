@@ -1,4 +1,4 @@
-// Package toondb provides Go SDK for ToonDB v0.3.4
+// Package sochdb provides Go SDK for SochDB v0.4.0
 //
 // Dual-mode architecture: Embedded (FFI) + Server (gRPC/IPC)
 //
@@ -12,15 +12,15 @@
 //   - Best for: Local development, simple apps, edge deployments
 //
 // 2. Server Mode (gRPC) - For distributed systems:
-//   - Thin client connecting to toondb-grpc server
+//   - Thin client connecting to sochdb-grpc server
 //   - Best for: Production, multi-language, scalability
 //
 // Example (Server Mode - gRPC):
 //
-//	import "github.com/toondb/toondb-go"
+//	import "github.com/sochdb/sochdb-go"
 //
 //	// Connect to server
-//	client, err := toondb.GrpcConnect("localhost:50051")
+//	client, err := sochdb.GrpcConnect("localhost:50051")
 //	if err != nil {
 //	    log.Fatal(err)
 //	}
@@ -31,10 +31,10 @@
 //
 // Example (Embedded Mode - IPC):
 //
-//	import "github.com/toondb/toondb-go"
+//	import "github.com/sochdb/sochdb-go"
 //
 //	// Connect via Unix socket
-//	client, err := toondb.Connect("/path/to/db/toondb.sock")
+//	client, err := sochdb.Connect("/path/to/db/sochdb.sock")
 //	if err != nil {
 //	    log.Fatal(err)
 //	}
@@ -42,7 +42,7 @@
 //
 //	// Use the client
 //	value, err := client.Get([]byte("key"))
-package toondb
+package sochdb
 
 // Version is the current SDK version.
 const Version = "0.3.6"

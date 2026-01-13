@@ -1,6 +1,6 @@
-# Contributing to ToonDB Go SDK
+# Contributing to SochDB Go SDK
 
-Thank you for your interest in contributing to the ToonDB Go SDK! This guide provides all the information you need to build, test, and contribute to the project.
+Thank you for your interest in contributing to the SochDB Go SDK! This guide provides all the information you need to build, test, and contribute to the project.
 
 ---
 
@@ -30,8 +30,8 @@ Thank you for your interest in contributing to the ToonDB Go SDK! This guide pro
 
 ```bash
 # Clone the repository
-git clone https://github.com/toondb/toondb-go.git
-cd toondb-go
+git clone https://github.com/sochdb/sochdb-go.git
+cd sochdb-go
 
 # Download dependencies
 go mod download
@@ -50,7 +50,7 @@ go test ./...
 ### Go SDK Only
 
 ```bash
-cd toondb-go
+cd sochdb-go
 go mod download
 go build ./...
 ```
@@ -65,7 +65,7 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 # Generate from proto files
-cd toondb/proto
+cd sochdb/proto
 protoc --go_out=. --go-grpc_out=. *.proto
 ```
 
@@ -89,12 +89,12 @@ go test -v ./...
 ### Integration Tests
 
 ```bash
-# Start ToonDB server first
-cd toondb
-cargo run -p toondb-grpc
+# Start SochDB server first
+cd sochdb
+cargo run -p sochdb-grpc
 
 # In another terminal, run integration tests
-cd toondb-go
+cd sochdb-go
 go test -tags=integration ./...
 ```
 
@@ -114,12 +114,12 @@ go run main.go
 
 ```bash
 # Development mode
-cd toondb
-cargo run -p toondb-grpc
+cd sochdb
+cargo run -p sochdb-grpc
 
 # Production mode (optimized)
-cargo build --release -p toondb-grpc
-./target/release/toondb-grpc --host 0.0.0.0 --port 50051
+cargo build --release -p sochdb-grpc
+./target/release/sochdb-grpc --host 0.0.0.0 --port 50051
 ```
 
 ### Server Configuration
@@ -134,7 +134,7 @@ The server runs all business logic including:
 
 ### Configuration File
 
-Create `toondb-server-config.toml`:
+Create `sochdb-server-config.toml`:
 
 ```toml
 [server]
@@ -192,8 +192,8 @@ test: Add integration tests for graphs
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/toondb-go.git
-   cd toondb-go
+   git clone https://github.com/YOUR_USERNAME/sochdb-go.git
+   cd sochdb-go
    ```
 
 2. **Create Feature Branch**
@@ -234,7 +234,7 @@ test: Add integration tests for graphs
 
 ```
 ┌────────────────────────────────────────────────┐
-│         Rust Server (toondb-grpc)              │
+│         Rust Server (sochdb-grpc)              │
 ├────────────────────────────────────────────────┤
 │  • All business logic (Graph, Policy, Search)  │
 │  • Vector operations (HNSW)                    │
@@ -266,7 +266,7 @@ test: Add integration tests for graphs
 - Error handling
 
 **errors.go**
-- ToonDBError type
+- SochDBError type
 - Error constructors
 - Error messages
 
@@ -275,7 +275,7 @@ test: Add integration tests for graphs
 - ContextFormat enum
 - FormatCapabilities utilities
 
-**toondb.go**
+**sochdb.go**
 - Package documentation
 - Version constants
 
@@ -304,9 +304,9 @@ test: Add integration tests for graphs
 
 **Old Code:**
 ```go
-import "github.com/toondb/toondb-go"
+import "github.com/sochdb/sochdb-go"
 
-db := toondb.Open("./data")
+db := sochdb.Open("./data")
 defer db.Close()
 
 tx := db.Begin()
@@ -316,10 +316,10 @@ tx.Commit()
 
 **New Code:**
 ```go
-import "github.com/toondb/toondb-go"
+import "github.com/sochdb/sochdb-go"
 
-// Start server first: cargo run -p toondb-grpc
-client := toondb.NewGrpcClient("localhost:50051")
+// Start server first: cargo run -p sochdb-grpc
+client := sochdb.NewGrpcClient("localhost:50051")
 defer client.Close()
 
 err := client.PutKv("key", []byte("value"))
@@ -329,8 +329,8 @@ if err != nil {
 ```
 
 **Migration Checklist:**
-- [ ] Start ToonDB server (cargo run -p toondb-grpc)
-- [ ] Replace `toondb.Open()` with `toondb.NewGrpcClient()`
+- [ ] Start SochDB server (cargo run -p sochdb-grpc)
+- [ ] Replace `sochdb.Open()` with `sochdb.NewGrpcClient()`
 - [ ] Remove transaction Begin/Commit (server manages)
 - [ ] Add error handling for all operations
 - [ ] Update connection strings to point to server
@@ -342,8 +342,8 @@ if err != nil {
 ### Version Bumping
 
 ```bash
-# Update version in toondb.go
-vim toondb.go
+# Update version in sochdb.go
+vim sochdb.go
 
 # Update go.mod if needed
 vim go.mod
@@ -367,7 +367,7 @@ git push origin v0.3.4
 Go modules are automatically versioned via Git tags. Users import via:
 
 ```go
-import "github.com/toondb/toondb-go@v0.3.4"
+import "github.com/sochdb/sochdb-go@v0.3.4"
 ```
 
 ---
@@ -406,11 +406,11 @@ go tool pprof cpu.prof
 
 ```bash
 # Start server
-cd toondb
-cargo run -p toondb-grpc --release
+cd sochdb
+cargo run -p sochdb-grpc --release
 
 # Run load test
-cd toondb-go/tests
+cd sochdb-go/tests
 go test -bench=BenchmarkBatchInsert -benchtime=10s
 ```
 
@@ -418,13 +418,13 @@ go test -bench=BenchmarkBatchInsert -benchtime=10s
 
 ## Getting Help
 
-- **Main Repo**: https://github.com/toondb/toondb
-- **Go SDK Issues**: https://github.com/toondb/toondb-go/issues
-- **Discussions**: https://github.com/toondb/toondb/discussions
-- **Contributing Guide**: See main repo [CONTRIBUTING.md](https://github.com/toondb/toondb/blob/main/CONTRIBUTING.md)
+- **Main Repo**: https://github.com/sochdb/sochdb
+- **Go SDK Issues**: https://github.com/sochdb/sochdb-go/issues
+- **Discussions**: https://github.com/sochdb/sochdb/discussions
+- **Contributing Guide**: See main repo [CONTRIBUTING.md](https://github.com/sochdb/sochdb/blob/main/CONTRIBUTING.md)
 
 ---
 
 ## License
 
-By contributing to ToonDB Go SDK, you agree that your contributions will be licensed under the Apache License 2.0.
+By contributing to SochDB Go SDK, you agree that your contributions will be licensed under the Apache License 2.0.

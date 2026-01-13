@@ -6,7 +6,7 @@
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
 
-package toondb
+package sochdb
 
 import (
 	"encoding/binary"
@@ -19,7 +19,7 @@ import (
 )
 
 // OpCode represents the wire protocol operation codes.
-// Must match toondb-storage/src/ipc_server.rs opcodes exactly.
+// Must match sochdb-storage/src/ipc_server.rs opcodes exactly.
 type OpCode uint8
 
 // Client → Server opcodes
@@ -52,14 +52,14 @@ const (
 	OpPong      OpCode = 0x87
 )
 
-// IPCClient handles low-level IPC communication with the ToonDB server.
+// IPCClient handles low-level IPC communication with the SochDB server.
 type IPCClient struct {
 	conn   net.Conn
 	mu     sync.Mutex
 	closed bool
 }
 
-// Connect establishes a connection to the ToonDB server.
+// Connect establishes a connection to the SochDB server.
 func Connect(socketPath string) (*IPCClient, error) {
 	conn, err := net.Dial("unix", socketPath)
 	if err != nil {
@@ -70,7 +70,7 @@ func Connect(socketPath string) (*IPCClient, error) {
 
 // ConnectToDatabase connects to a database at the given path.
 func ConnectToDatabase(dbPath string) (*IPCClient, error) {
-	socketPath := filepath.Join(dbPath, "toondb.sock")
+	socketPath := filepath.Join(dbPath, "sochdb.sock")
 	return Connect(socketPath)
 }
 
@@ -333,7 +333,7 @@ func (c *IPCClient) parseErrorPayload(payload []byte) error {
 		}
 	}
 
-	return &ToonDBError{Op: "remote", Message: msg}
+	return &SochDBError{Op: "remote", Message: msg}
 }
 
 // Helper methods

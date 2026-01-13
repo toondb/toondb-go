@@ -9,7 +9,7 @@ import (
 )
 
 func findBinary(name string) (string, error) {
-	if envPath := os.Getenv("TOONDB_BULK_PATH"); envPath != "" {
+	if envPath := os.Getenv("SOCHDB_BULK_PATH"); envPath != "" {
 		if _, err := os.Stat(envPath); err == nil {
 			return envPath, nil
 		}
@@ -25,9 +25,9 @@ func findBinary(name string) (string, error) {
 	}
 	homeDir, _ := os.UserHomeDir()
 	commonPaths := []string{
-		filepath.Join(homeDir, ".toondb", "bin", name),
+		filepath.Join(homeDir, ".sochdb", "bin", name),
 		"/usr/local/bin/" + name,
-		"/opt/toondb/bin/" + name,
+		"/opt/sochdb/bin/" + name,
 	}
 	for _, p := range commonPaths {
 		if _, err := os.Stat(p); err == nil {
@@ -38,7 +38,7 @@ func findBinary(name string) (string, error) {
 }
 
 func main() {
-	binaryName := "toondb-bulk"
+	binaryName := "sochdb-bulk"
 	if runtime.GOOS == "windows" {
 		binaryName += ".exe"
 	}
@@ -46,7 +46,7 @@ func main() {
 	binPath, err := findBinary(binaryName)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s binary not found.\n", binaryName)
-		fmt.Fprintln(os.Stderr, "Please ensure ToonDB is installed or set TOONDB_BULK_PATH.")
+		fmt.Fprintln(os.Stderr, "Please ensure SochDB is installed or set SOCHDB_BULK_PATH.")
 		os.Exit(1)
 	}
 

@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package toondb provides unified output format semantics.
+// Package sochdb provides unified output format semantics.
 //
 // This module provides format enums for query results and LLM context packaging.
-// It mirrors the Rust toondb-client format module for consistency.
-package toondb
+// It mirrors the Rust sochdb-client format module for consistency.
+package sochdb
 
 import "fmt"
 

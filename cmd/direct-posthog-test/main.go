@@ -1,4 +1,4 @@
-// Direct PostHog test - no ToonDB dependencies
+// Direct PostHog test - no SochDB dependencies
 package main
 
 import (

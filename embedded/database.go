@@ -1,6 +1,6 @@
-// Package embedded provides direct FFI access to ToonDB native library
+// Package embedded provides direct FFI access to SochDB native library
 //
-// This package uses CGO to bind directly to libtoondb_storage for embedded,
+// This package uses CGO to bind directly to libsochdb_storage for embedded,
 // single-process deployments. No server required.
 //
 // Usage:
@@ -17,9 +17,9 @@ package embedded
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/../include
-#cgo darwin LDFLAGS: -L${SRCDIR}/../../toondb/target/release -ltoondb_storage -Wl,-rpath,${SRCDIR}/../../toondb/target/release
-#cgo linux LDFLAGS: -L${SRCDIR}/../../toondb/target/release -ltoondb_storage -Wl,-rpath,${SRCDIR}/../../toondb/target/release
-#cgo windows LDFLAGS: -L${SRCDIR}/../../toondb/target/release -ltoondb_storage
+#cgo darwin LDFLAGS: -L${SRCDIR}/../../sochdb/target/release -lsochdb_storage -Wl,-rpath,${SRCDIR}/../../sochdb/target/release
+#cgo linux LDFLAGS: -L${SRCDIR}/../../sochdb/target/release -lsochdb_storage -Wl,-rpath,${SRCDIR}/../../sochdb/target/release
+#cgo windows LDFLAGS: -L${SRCDIR}/../../sochdb/target/release -lsochdb_storage
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -49,37 +49,37 @@ typedef struct {
 } StorageStats;
 
 // Database lifecycle
-extern DatabasePtr toondb_open(const char* path);
-extern void toondb_close(DatabasePtr db);
+extern DatabasePtr sochdb_open(const char* path);
+extern void sochdb_close(DatabasePtr db);
 
 // Transaction API
-extern TxnHandle toondb_begin_txn(DatabasePtr db);
-extern CommitResult toondb_commit(DatabasePtr db, TxnHandle txn);
-extern int toondb_abort(DatabasePtr db, TxnHandle txn);
+extern TxnHandle sochdb_begin_txn(DatabasePtr db);
+extern CommitResult sochdb_commit(DatabasePtr db, TxnHandle txn);
+extern int sochdb_abort(DatabasePtr db, TxnHandle txn);
 
 // Key-Value API
-extern int toondb_put(DatabasePtr db, TxnHandle txn, const uint8_t* key, size_t key_len, const uint8_t* val, size_t val_len);
-extern int toondb_get(DatabasePtr db, TxnHandle txn, const uint8_t* key, size_t key_len, uint8_t** val_out, size_t* len_out);
-extern int toondb_delete(DatabasePtr db, TxnHandle txn, const uint8_t* key, size_t key_len);
-extern void toondb_free_bytes(uint8_t* ptr, size_t len);
+extern int sochdb_put(DatabasePtr db, TxnHandle txn, const uint8_t* key, size_t key_len, const uint8_t* val, size_t val_len);
+extern int sochdb_get(DatabasePtr db, TxnHandle txn, const uint8_t* key, size_t key_len, uint8_t** val_out, size_t* len_out);
+extern int sochdb_delete(DatabasePtr db, TxnHandle txn, const uint8_t* key, size_t key_len);
+extern void sochdb_free_bytes(uint8_t* ptr, size_t len);
 
 // Path API
-extern int toondb_put_path(DatabasePtr db, TxnHandle txn, const char* path, const uint8_t* val, size_t val_len);
-extern int toondb_get_path(DatabasePtr db, TxnHandle txn, const char* path, uint8_t** val_out, size_t* len_out);
+extern int sochdb_put_path(DatabasePtr db, TxnHandle txn, const char* path, const uint8_t* val, size_t val_len);
+extern int sochdb_get_path(DatabasePtr db, TxnHandle txn, const char* path, uint8_t** val_out, size_t* len_out);
 
 // Scan API
 typedef void* ScanIteratorPtr;
-extern ScanIteratorPtr toondb_scan_prefix(DatabasePtr db, TxnHandle txn, const uint8_t* prefix, size_t prefix_len);
-extern int toondb_scan_next(ScanIteratorPtr iter, uint8_t** key_out, size_t* key_len_out, uint8_t** val_out, size_t* val_len_out);
-extern void toondb_scan_free(ScanIteratorPtr iter);
+extern ScanIteratorPtr sochdb_scan_prefix(DatabasePtr db, TxnHandle txn, const uint8_t* prefix, size_t prefix_len);
+extern int sochdb_scan_next(ScanIteratorPtr iter, uint8_t** key_out, size_t* key_len_out, uint8_t** val_out, size_t* val_len_out);
+extern void sochdb_scan_free(ScanIteratorPtr iter);
 
 // Checkpoint & Stats
-extern uint64_t toondb_checkpoint(DatabasePtr db);
-extern StorageStats toondb_stats(DatabasePtr db);
+extern uint64_t sochdb_checkpoint(DatabasePtr db);
+extern StorageStats sochdb_stats(DatabasePtr db);
 
 // Index policy
-extern int toondb_set_table_index_policy(DatabasePtr db, const char* table, uint8_t policy);
-extern uint8_t toondb_get_table_index_policy(DatabasePtr db, const char* table);
+extern int sochdb_set_table_index_policy(DatabasePtr db, const char* table, uint8_t policy);
+extern uint8_t sochdb_get_table_index_policy(DatabasePtr db, const char* table);
 */
 import "C"
 import (
@@ -88,13 +88,13 @@ import (
 	"unsafe"
 )
 
-// Database represents an embedded ToonDB instance with direct FFI access
+// Database represents an embedded SochDB instance with direct FFI access
 type Database struct {
 	ptr  C.DatabasePtr
 	path string
 }
 
-// Open opens a ToonDB database at the specified path
+// Open opens a SochDB database at the specified path
 //
 // The database is created if it doesn't exist. Returns an error if the
 // database cannot be opened.
@@ -102,7 +102,7 @@ func Open(path string) (*Database, error) {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
-	ptr := C.toondb_open(cpath)
+	ptr := C.sochdb_open(cpath)
 	if ptr == nil {
 		return nil, fmt.Errorf("failed to open database at %s", path)
 	}
@@ -116,7 +116,7 @@ func Open(path string) (*Database, error) {
 // Close closes the database and releases all resources
 func (db *Database) Close() error {
 	if db.ptr != nil {
-		C.toondb_close(db.ptr)
+		C.sochdb_close(db.ptr)
 		db.ptr = nil
 	}
 	return nil
@@ -188,7 +188,7 @@ func (db *Database) GetPath(path string) ([]byte, error) {
 
 // Begin starts a new transaction
 func (db *Database) Begin() *Transaction {
-	handle := C.toondb_begin_txn(db.ptr)
+	handle := C.sochdb_begin_txn(db.ptr)
 	return &Transaction{
 		db:        db,
 		handle:    handle,
@@ -214,13 +214,13 @@ func (db *Database) WithTransaction(fn func(*Transaction) error) error {
 
 // Checkpoint forces a checkpoint and returns the LSN
 func (db *Database) Checkpoint() (uint64, error) {
-	lsn := C.toondb_checkpoint(db.ptr)
+	lsn := C.sochdb_checkpoint(db.ptr)
 	return uint64(lsn), nil
 }
 
 // Stats returns storage statistics
 func (db *Database) Stats() (*Stats, error) {
-	cstats := C.toondb_stats(db.ptr)
+	cstats := C.sochdb_stats(db.ptr)
 
 	return &Stats{
 		MemtableSizeBytes:  uint64(cstats.memtable_size_bytes),
@@ -236,7 +236,7 @@ func (db *Database) SetTableIndexPolicy(table string, policy IndexPolicy) error 
 	ctable := C.CString(table)
 	defer C.free(unsafe.Pointer(ctable))
 
-	result := C.toondb_set_table_index_policy(db.ptr, ctable, C.uint8_t(policy))
+	result := C.sochdb_set_table_index_policy(db.ptr, ctable, C.uint8_t(policy))
 	if result != 0 {
 		return fmt.Errorf("failed to set index policy for table %s", table)
 	}
@@ -249,7 +249,7 @@ func (db *Database) GetTableIndexPolicy(table string) (IndexPolicy, error) {
 	ctable := C.CString(table)
 	defer C.free(unsafe.Pointer(ctable))
 
-	policy := C.toondb_get_table_index_policy(db.ptr, ctable)
+	policy := C.sochdb_get_table_index_policy(db.ptr, ctable)
 	if policy == 255 {
 		return 0, fmt.Errorf("failed to get index policy for table %s", table)
 	}
@@ -308,7 +308,7 @@ func (txn *Transaction) Put(key, value []byte) error {
 		valPtr = (*C.uint8_t)(unsafe.Pointer(&value[0]))
 	}
 
-	result := C.toondb_put(
+	result := C.sochdb_put(
 		txn.db.ptr,
 		txn.handle,
 		keyPtr,
@@ -338,7 +338,7 @@ func (txn *Transaction) Get(key []byte) ([]byte, error) {
 	var valOut *C.uint8_t
 	var lenOut C.size_t
 
-	result := C.toondb_get(
+	result := C.sochdb_get(
 		txn.db.ptr,
 		txn.handle,
 		keyPtr,
@@ -362,7 +362,7 @@ func (txn *Transaction) Get(key []byte) ([]byte, error) {
 	value := C.GoBytes(unsafe.Pointer(valOut), C.int(lenOut))
 
 	// Free Rust memory
-	C.toondb_free_bytes(valOut, lenOut)
+	C.sochdb_free_bytes(valOut, lenOut)
 
 	return value, nil
 }
@@ -378,7 +378,7 @@ func (txn *Transaction) Delete(key []byte) error {
 		keyPtr = (*C.uint8_t)(unsafe.Pointer(&key[0]))
 	}
 
-	result := C.toondb_delete(
+	result := C.sochdb_delete(
 		txn.db.ptr,
 		txn.handle,
 		keyPtr,
@@ -406,7 +406,7 @@ func (txn *Transaction) PutPath(path string, value []byte) error {
 		valPtr = (*C.uint8_t)(unsafe.Pointer(&value[0]))
 	}
 
-	result := C.toondb_put_path(
+	result := C.sochdb_put_path(
 		txn.db.ptr,
 		txn.handle,
 		cpath,
@@ -433,7 +433,7 @@ func (txn *Transaction) GetPath(path string) ([]byte, error) {
 	var valOut *C.uint8_t
 	var lenOut C.size_t
 
-	result := C.toondb_get_path(
+	result := C.sochdb_get_path(
 		txn.db.ptr,
 		txn.handle,
 		cpath,
@@ -452,7 +452,7 @@ func (txn *Transaction) GetPath(path string) ([]byte, error) {
 	}
 
 	value := C.GoBytes(unsafe.Pointer(valOut), C.int(lenOut))
-	C.toondb_free_bytes(valOut, lenOut)
+	C.sochdb_free_bytes(valOut, lenOut)
 
 	return value, nil
 }
@@ -468,7 +468,7 @@ func (txn *Transaction) ScanPrefix(prefix []byte) *ScanIterator {
 		prefixPtr = (*C.uint8_t)(unsafe.Pointer(&prefix[0]))
 	}
 
-	iterPtr := C.toondb_scan_prefix(
+	iterPtr := C.sochdb_scan_prefix(
 		txn.db.ptr,
 		txn.handle,
 		prefixPtr,
@@ -491,7 +491,7 @@ func (txn *Transaction) Commit() error {
 		return err
 	}
 
-	result := C.toondb_commit(txn.db.ptr, txn.handle)
+	result := C.sochdb_commit(txn.db.ptr, txn.handle)
 
 	if result.error_code != 0 {
 		if result.error_code == -2 {
@@ -510,7 +510,7 @@ func (txn *Transaction) Abort() error {
 		return nil
 	}
 
-	C.toondb_abort(txn.db.ptr, txn.handle)
+	C.sochdb_abort(txn.db.ptr, txn.handle)
 	txn.aborted = true
 	return nil
 }
@@ -540,7 +540,7 @@ func (iter *ScanIterator) Next() ([]byte, []byte, bool) {
 	var keyOut, valOut *C.uint8_t
 	var keyLen, valLen C.size_t
 
-	result := C.toondb_scan_next(iter.ptr, &keyOut, &keyLen, &valOut, &valLen)
+	result := C.sochdb_scan_next(iter.ptr, &keyOut, &keyLen, &valOut, &valLen)
 
 	if result == 1 {
 		// End of scan
@@ -553,8 +553,8 @@ func (iter *ScanIterator) Next() ([]byte, []byte, bool) {
 	key := C.GoBytes(unsafe.Pointer(keyOut), C.int(keyLen))
 	value := C.GoBytes(unsafe.Pointer(valOut), C.int(valLen))
 
-	C.toondb_free_bytes(keyOut, keyLen)
-	C.toondb_free_bytes(valOut, valLen)
+	C.sochdb_free_bytes(keyOut, keyLen)
+	C.sochdb_free_bytes(valOut, valLen)
 
 	return key, value, true
 }
@@ -562,7 +562,7 @@ func (iter *ScanIterator) Next() ([]byte, []byte, bool) {
 // Close closes the iterator and releases resources
 func (iter *ScanIterator) Close() {
 	if iter.ptr != nil {
-		C.toondb_scan_free(iter.ptr)
+		C.sochdb_scan_free(iter.ptr)
 		iter.ptr = nil
 	}
 }

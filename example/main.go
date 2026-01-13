@@ -6,11 +6,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/toondb/toondb-go"
+	"github.com/sochdb/sochdb-go"
 )
 
 func main() {
-	fmt.Println("ToonDB Go SDK v0.3.4 Example")
+	fmt.Println("SochDB Go SDK v0.3.4 Example")
 	fmt.Println("================================")
 
 	// Example 1: gRPC Client (Server Mode)
@@ -27,10 +27,10 @@ func main() {
 }
 
 func grpcExample() {
-	// Connect to ToonDB gRPC server
-	client, err := toondb.GrpcConnect("localhost:50051")
+	// Connect to SochDB gRPC server
+	client, err := sochdb.GrpcConnect("localhost:50051")
 	if err != nil {
-		log.Printf("Failed to connect: %v (make sure toondb-grpc server is running)", err)
+		log.Printf("Failed to connect: %v (make sure sochdb-grpc server is running)", err)
 		return
 	}
 	defer client.Close()
@@ -54,7 +54,7 @@ func grpcExample() {
 	fmt.Printf("✅ Get: user:1 -> %s\n", string(value))
 
 	// Add graph edge
-	edge := toondb.GrpcGraphEdge{
+	edge := sochdb.GrpcGraphEdge{
 		FromID:   "alice",
 		EdgeType: "follows",
 		ToID:     "bob",
@@ -80,9 +80,9 @@ func grpcExample() {
 
 func ipcExample() {
 	// Connect via Unix socket (embedded mode)
-	client, err := toondb.Connect("/tmp/toondb.sock")
+	client, err := sochdb.Connect("/tmp/sochdb.sock")
 	if err != nil {
-		log.Printf("Failed to connect: %v (make sure ToonDB server is running with IPC)", err)
+		log.Printf("Failed to connect: %v (make sure SochDB server is running with IPC)", err)
 		return
 	}
 	defer client.Close()
@@ -107,15 +107,15 @@ func ipcExample() {
 func formatExample() {
 	// Format utilities for LLM context optimization
 	fmt.Println("\nFormat Utilities (LLM Context Optimization):")
-	fmt.Printf("• WireFormat.Toon: %s (40-66%% fewer tokens than JSON)\n", toondb.WireFormatToon.String())
-	fmt.Printf("• WireFormat.JSON: %s\n", toondb.WireFormatJSON.String())
-	fmt.Printf("• WireFormat.Columnar: %s\n", toondb.WireFormatColumnar.String())
-	fmt.Printf("• ContextFormat.Toon: %s\n", toondb.ContextFormatToon.String())
-	fmt.Printf("• ContextFormat.JSON: %s\n", toondb.ContextFormatJSON.String())
-	fmt.Printf("• ContextFormat.Markdown: %s\n", toondb.ContextFormatMarkdown.String())
+	fmt.Printf("• WireFormat.Toon: %s (40-66%% fewer tokens than JSON)\n", sochdb.WireFormatToon.String())
+	fmt.Printf("• WireFormat.JSON: %s\n", sochdb.WireFormatJSON.String())
+	fmt.Printf("• WireFormat.Columnar: %s\n", sochdb.WireFormatColumnar.String())
+	fmt.Printf("• ContextFormat.Toon: %s\n", sochdb.ContextFormatToon.String())
+	fmt.Printf("• ContextFormat.JSON: %s\n", sochdb.ContextFormatJSON.String())
+	fmt.Printf("• ContextFormat.Markdown: %s\n", sochdb.ContextFormatMarkdown.String())
 
 	// Format capabilities
-	caps := toondb.NewFormatCapabilities()
-	roundTrip := caps.SupportsRoundTripConversion(toondb.WireFormatToon, toondb.ContextFormatToon)
+	caps := sochdb.NewFormatCapabilities()
+	roundTrip := caps.SupportsRoundTripConversion(sochdb.WireFormatToon, sochdb.ContextFormatToon)
 	fmt.Printf("\n✅ TOON round-trip supported: %v\n", roundTrip)
 }

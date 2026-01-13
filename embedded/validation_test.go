@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/toondb/toondb-go/embedded"
+	"github.com/sochdb/sochdb-go/embedded"
 )
 
 const testDBPath = "./validation_test_db"
@@ -310,7 +310,7 @@ func TestCheckpoint(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	fmt.Println("╔════════════════════════════════════════════════════╗")
-	fmt.Println("║    ToonDB Go SDK - Comprehensive Validation       ║")
+	fmt.Println("║    SochDB Go SDK - Comprehensive Validation       ║")
 	fmt.Println("╚════════════════════════════════════════════════════╝")
 
 	cleanup()

@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/toondb/toondb-go/embedded"
+	"github.com/sochdb/sochdb-go/embedded"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 	// Clean up old database
 	os.RemoveAll(dbPath)
 
-	fmt.Println("=== ToonDB Go SDK - Embedded Mode (FFI) ===")
+	fmt.Println("=== SochDB Go SDK - Embedded Mode (FFI) ===")
 	fmt.Println()
 	// Open database
 	fmt.Println("Opening database...")

@@ -1,4 +1,4 @@
-package toondb
+package sochdb
 
 import (
 	"errors"
@@ -58,15 +58,15 @@ func (e *TransactionError) Error() string {
 	return fmt.Sprintf("transaction error: %s", e.Message)
 }
 
-// ToonDBError represents a general ToonDB error.
-type ToonDBError struct {
+// SochDBError represents a general SochDB error.
+type SochDBError struct {
 	Op      string
 	Message string
 }
 
-func (e *ToonDBError) Error() string {
+func (e *SochDBError) Error() string {
 	if e.Op != "" {
-		return fmt.Sprintf("toondb %s: %s", e.Op, e.Message)
+		return fmt.Sprintf("sochdb %s: %s", e.Op, e.Message)
 	}
 	return e.Message
 }

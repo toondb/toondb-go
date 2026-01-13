@@ -1,4 +1,4 @@
-module github.com/toondb/toondb-go
+module github.com/sochdb/sochdb-go
 
 go 1.24.0
 
