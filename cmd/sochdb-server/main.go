@@ -56,7 +56,7 @@ func main() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %s binary not found.\n", binaryName)
 		fmt.Fprintln(os.Stderr, "Please ensure SochDB is installed or set SOCHDB_SERVER_PATH.")
-		fmt.Fprintln(os.Stderr, "Download from: https://github.com/sushanth/sochdb/releases")
+		fmt.Fprintln(os.Stderr, "Download from: https://github.com/sochdb/sochdb/releases")
 		os.Exit(1)
 	}
 

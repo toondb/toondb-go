@@ -16,10 +16,10 @@
 package embedded
 
 /*
-#cgo CFLAGS: -I${SRCDIR}/../include
-#cgo darwin LDFLAGS: -L${SRCDIR}/../../sochdb/target/release -lsochdb_storage -Wl,-rpath,${SRCDIR}/../../sochdb/target/release
-#cgo linux LDFLAGS: -L${SRCDIR}/../../sochdb/target/release -lsochdb_storage -Wl,-rpath,${SRCDIR}/../../sochdb/target/release
-#cgo windows LDFLAGS: -L${SRCDIR}/../../sochdb/target/release -lsochdb_storage
+#cgo pkg-config: libsochdb_storage
+#cgo !pkg-config darwin LDFLAGS: -lsochdb_storage
+#cgo !pkg-config linux LDFLAGS: -lsochdb_storage
+#cgo !pkg-config windows LDFLAGS: -lsochdb_storage
 
 #include <stdlib.h>
 #include <stdint.h>

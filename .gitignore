@@ -40,3 +40,17 @@ Thumbs.db
 *.db
 *.sqlite
 test_data/
+
+# SochDB - Database directories and generated files
+**/sochdb_data/
+**/sochdb_data_*/
+**/*_sochdb_data/
+**/toondb_data/
+**/example_*_db/
+**/*_db/
+*_metrics.json
+*_support_metrics.json
+
+# SochDB - Build artifacts
+analytics_demo
+test-analytics
