@@ -5,8 +5,12 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g., 0.3.0)'
+        description: 'Go SDK version to release (e.g., 0.4.1)'
         required: true
+        type: string
+      sochdb_version:
+        description: 'SochDB binary version (e.g., 0.4.3) - MUST match an existing sochdb/sochdb release tag'
+        required: false
         type: string
   # Automatic trigger on version tags
   push:
@@ -31,14 +35,23 @@ jobs:
         id: version
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            VERSION="${{ github.event.inputs.version }}"
+            SDK_VERSION="${{ github.event.inputs.version }}"
+            # Use sochdb_version if provided, otherwise use SDK version
+            SOCHDB_VERSION="${{ github.event.inputs.sochdb_version }}"
+            if [ -z "$SOCHDB_VERSION" ]; then
+              SOCHDB_VERSION="$SDK_VERSION"
+            fi
           else
             # Extract version from tag (remove 'v' prefix)
-            VERSION="${GITHUB_REF#refs/tags/v}"
+            SDK_VERSION="${GITHUB_REF#refs/tags/v}"
+            SOCHDB_VERSION="$SDK_VERSION"
           fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
-          echo "Using version: $VERSION"
+          echo "sdk_version=$SDK_VERSION" >> $GITHUB_OUTPUT
+          echo "sochdb_version=$SOCHDB_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$SDK_VERSION" >> $GITHUB_OUTPUT
+          echo "sochdb_tag=v$SOCHDB_VERSION" >> $GITHUB_OUTPUT
+          echo "Using Go SDK version: $SDK_VERSION"
+          echo "Using SochDB binary version: $SOCHDB_VERSION"
 
       - name: Create bin directories
         run: |
@@ -48,8 +61,8 @@ jobs:
 
       - name: Download macOS ARM64 binaries
         run: |
-          ASSET_NAME="sochdb-${{ steps.version.outputs.version }}-aarch64-apple-darwin.tar.gz"
-          DOWNLOAD_URL="https://github.com/${{ env.SOCHDB_REPO }}/releases/download/${{ steps.version.outputs.tag }}/${ASSET_NAME}"
+          ASSET_NAME="sochdb-${{ steps.version.outputs.sochdb_version }}-aarch64-apple-darwin.tar.gz"
+          DOWNLOAD_URL="https://github.com/${{ env.SOCHDB_REPO }}/releases/download/${{ steps.version.outputs.sochdb_tag }}/${ASSET_NAME}"
           echo "Downloading from: $DOWNLOAD_URL"
           
           curl -L -f -o darwin-arm64.tar.gz "$DOWNLOAD_URL"
@@ -72,8 +85,8 @@ jobs:
 
       - name: Download Linux x86_64 binaries
         run: |
-          ASSET_NAME="sochdb-${{ steps.version.outputs.version }}-x86_64-unknown-linux-gnu.tar.gz"
-          DOWNLOAD_URL="https://github.com/${{ env.SOCHDB_REPO }}/releases/download/${{ steps.version.outputs.tag }}/${ASSET_NAME}"
+          ASSET_NAME="sochdb-${{ steps.version.outputs.sochdb_version }}-x86_64-unknown-linux-gnu.tar.gz"
+          DOWNLOAD_URL="https://github.com/${{ env.SOCHDB_REPO }}/releases/download/${{ steps.version.outputs.sochdb_tag }}/${ASSET_NAME}"
           echo "Downloading from: $DOWNLOAD_URL"
           
           curl -L -f -o linux-amd64.tar.gz "$DOWNLOAD_URL"
@@ -103,8 +116,8 @@ jobs:
 
       - name: Download Windows x86_64 binaries
         run: |
-          ASSET_NAME="sochdb-${{ steps.version.outputs.version }}-x86_64-pc-windows-msvc.zip"
-          DOWNLOAD_URL="https://github.com/${{ env.SOCHDB_REPO }}/releases/download/${{ steps.version.outputs.tag }}/${ASSET_NAME}"
+          ASSET_NAME="sochdb-${{ steps.version.outputs.sochdb_version }}-x86_64-pc-windows-msvc.zip"
+          DOWNLOAD_URL="https://github.com/${{ env.SOCHDB_REPO }}/releases/download/${{ steps.version.outputs.sochdb_tag }}/${ASSET_NAME}"
           echo "Downloading from: $DOWNLOAD_URL"
           
           curl -L -f -o windows-amd64.zip "$DOWNLOAD_URL"
@@ -127,7 +140,7 @@ jobs:
 
       - name: Update version in sochdb.go
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.version.outputs.sdk_version }}"
           if grep -q 'const Version' sochdb.go; then
             sed -i "s/const Version = \".*\"/const Version = \"$VERSION\"/" sochdb.go
           fi
@@ -153,7 +166,7 @@ jobs:
 
       - name: Create release archive
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.version.outputs.sdk_version }}"
           
           # Create archive in /tmp to avoid "file changed" error
           tar -czvf /tmp/sochdb-go-${VERSION}.tar.gz \
@@ -174,19 +187,22 @@ jobs:
       - name: Generate release notes
         id: notes
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          SDK_VERSION="${{ steps.version.outputs.sdk_version }}"
+          SOCHDB_VERSION="${{ steps.version.outputs.sochdb_version }}"
           cat << 'EOF' > release_notes.md
-          ## SochDB Go SDK v${{ steps.version.outputs.version }}
+          ## SochDB Go SDK v${{ steps.version.outputs.sdk_version }}
+          
+          **Bundled with SochDB binaries v${{ steps.version.outputs.sochdb_version }}**
           
           ### Installation
           
           ```bash
-          go get github.com/sochdb/sochdb-go@v${{ steps.version.outputs.version }}
+          go get github.com/sochdb/sochdb-go@v${{ steps.version.outputs.sdk_version }}
           ```
           
           ### Bundled Binaries
           
-          This release includes pre-built SochDB server binaries for:
+          This release includes pre-built SochDB server binaries (v${{ steps.version.outputs.sochdb_version }}) for:
           - **macOS ARM64** (Apple Silicon) - `bin/darwin-arm64/`
           - **Linux x86_64** - `bin/linux-amd64/`
           - **Windows x64** - `bin/windows-amd64/`
@@ -202,7 +218,7 @@ jobs:
           
           ### Changes
           
-          See the [main SochDB changelog](https://github.com/sochdb/sochdb/blob/main/CHANGELOG.md) for details.
+          See the [main SochDB changelog](https://github.com/sochdb/sochdb/blob/main/CHANGELOG.md) for binary details.
           EOF
 
       - name: Create or update tag
@@ -228,7 +244,7 @@ jobs:
           name: SochDB Go SDK ${{ steps.version.outputs.tag }}
           body_path: release_notes.md
           files: |
-            sochdb-go-${{ steps.version.outputs.version }}.tar.gz
+            sochdb-go-${{ steps.version.outputs.sdk_version }}.tar.gz
           draft: false
           prerelease: false
         env:
