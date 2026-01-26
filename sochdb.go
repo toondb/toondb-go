@@ -1,4 +1,4 @@
-// Package sochdb provides Go SDK for SochDB v0.4.4
+// Package sochdb provides Go SDK for SochDB v0.4.3
 //
 // Dual-mode architecture: Embedded (FFI) + Server (gRPC/IPC)
 //
@@ -106,4 +106,4 @@
 package sochdb
 
 // Version is the current SDK version.
-const Version = "0.4.1"
+const Version = "0.4.3"
