@@ -328,10 +328,10 @@ fmt.Printf("Pending: %d, Completed: %d\n", stats.Pending, stats.Completed)
 
 ### For Concurrent Mode
 
-- **SochDB Core**: v0.4.4 or later
+- **SochDB Core**: Latest version
 - **Go Version**: 1.18+
 - **CGO**: Required (uses C bindings)
-- **Native Library**: `libsochdb_storage.{dylib,so}` v0.4.4+
+- **Native Library**: `libsochdb_storage.{dylib,so}`
 
 **Operating Systems:**
 - ✅ Linux (Ubuntu 20.04+, RHEL 8+)
@@ -492,7 +492,7 @@ export CGO_LDFLAGS="-L/path/to/sochdb/target/debug -lsochdb_storage"
 ### Step 2: Install the Go SDK
 
 ```bash
-go get github.com/sochdb/sochdb-go@v0.4.0
+go get github.com/sochdb/sochdb-go
 ```
 
 ### Step 3: Install pkg-config (if not already installed)
@@ -524,7 +524,7 @@ pkg-config --libs libsochdb_storage
 
 # SochDB Go SDK Documentation
 
-**Version 0.4.0** | LLM-Optimized Embedded Database with Native Vector Search
+**LLM-Optimized Embedded Database with Native Vector Search**
 
 ---
 
@@ -3762,7 +3762,7 @@ A:
 A: Yes! Both modes have the same API. Change `Database.open()` to `SochDBClient()` and vice versa.
 
 **Q: Do temporal graphs work in embedded mode?**  
-A: Yes! As of v0.4.0, temporal graphs work in both embedded and server modes with identical APIs.
+A: Yes! Temporal graphs work in both embedded and server modes with identical APIs.
 
 **Q: Is embedded mode slower than server mode?**  
 A: Embedded mode is faster for single-process use (no network overhead). Server mode is better for distributed deployments.
