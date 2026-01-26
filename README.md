@@ -53,7 +53,40 @@ pkg-config --libs libsochdb_storage
 **Dual-mode architecture: Embedded (FFI) + Concurrent + Server (gRPC/IPC)**  
 Choose the deployment mode that fits your needs.
 
-## Quick Start
+---
+
+# SochDB Go SDK Documentation
+
+**LLM-Optimized Embedded Database with Native Vector Search**
+
+---
+
+## Table of Contents
+
+1. [Quick Start](#1-quick-start)
+2. [Installation](#2-installation)
+3. [Architecture Overview](#3-architecture-overview)
+4. [Core Key-Value Operations](#4-core-key-value-operations)
+5. [Transactions (ACID with SSI)](#5-transactions-acid-with-ssi)
+6. [Query Builder](#6-query-builder)
+7. [Prefix Scanning](#7-prefix-scanning)
+8. [SQL Operations](#8-sql-operations)
+9. [Table Management & Index Policies](#9-table-management--index-policies)
+10. [Namespaces & Multi-Tenancy](#10-namespaces--multi-tenancy)
+11. [Vector Search (Native HNSW)](#11-vector-search-native-hnsw)
+12. [Semantic Cache](#12-semantic-cache)
+13. [Memory System](#13-memory-system)
+14. [Graph Database Operations](#14-graph-database-operations)
+15. [Temporal Graphs](#15-temporal-graphs)
+16. [Server Mode (gRPC)](#16-server-mode-grpc)
+17. [Performance Optimization](#17-performance-optimization)
+18. [Best Practices](#18-best-practices)
+19. [FAQ](#19-faq)
+20. [Contributing](#20-contributing)
+
+---
+
+## 1. Quick Start
 
 ### Concurrent Embedded Mode
 
@@ -675,13 +708,7 @@ go get github.com/sochdb/sochdb-go
 **Optional Dependencies:**
 ```bash
 # For async support
-go get github.com/sochdb/sochdb-go[async]
-
-# For server mode
-go get github.com/sochdb/sochdb-go[grpc]
-
-# Everything
-go get github.com/sochdb/sochdb-go[all]
+go get github.com/sochdb/sochdb-go/async
 ```
 
 ---
